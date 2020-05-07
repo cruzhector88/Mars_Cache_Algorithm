@@ -1,0 +1,104 @@
+.data
+	mensaje: .asciiz " Hits.\n"
+	arr: .word 1,2,3,4,2,5,6,2,7,8,2,4,9,2,12,13,5,2,8,15
+
+.text
+	#which set to go
+	li $t0, 4
+	
+	la $s2, arr # $s2 = &arr
+	jal LRU
+	
+	li $v0, 10
+	syscall
+	
+	
+L1:
+	addi $t6, $t6, 1
+	addi $s2, $s2, 4 # move array pointer
+
+LRU:	
+	lw $s5, ($s2) #$s7 = arr[i]
+	beqz $s5, DONE
+	
+	rem $t5, $s5, $t0
+	beqz $t5, ZERO
+	beq $t5, 1, ONE
+	beq $t5, 2, TWO
+	
+TRHEE:	
+	#t9, s3
+	beq $t9, $s5, L1
+	beq $s3, $s5, HITthree
+	move $s3, $t9
+	lw $t9, ($s2)
+	addi $s2, $s2, 4 # move array pointer
+	j LRU
+	
+ZERO:	
+	#t1, t2
+	beq $t1, $s5, L1
+	beq $t2, $s5, HITzero
+	move $t2, $t1
+	lw $t1, ($s2)
+	addi $s2, $s2, 4 # move array pointer
+	j LRU
+	
+ONE:	
+	#t3, t4
+	beq $t3, $s5, L1
+	beq $t4, $s5, HITone
+	move $t4, $t3
+	lw $t3, ($s2)
+	addi $s2, $s2, 4 # move array pointer
+	j LRU
+	
+TWO:	
+	#t7, t8
+	beq $t7, $s5, L1
+	beq $t8, $s5, HITtwo
+	move $t8, $t7
+	lw $t7, ($s2)
+	addi $s2, $s2, 4 # move array pointer
+	j LRU
+	
+HITzero:
+	move $t2, $t1
+	lw $t1, ($s2)
+	addi $s2, $s2, 4 # move array pointer
+	addi $t6, $t6, 1
+	j LRU # goto L1
+	
+HITone:
+	move $t4, $t3
+	lw $t3, ($s2)
+	addi $s2, $s2, 4 # move array pointer
+	addi $t6, $t6, 1
+	j LRU # goto L1
+	
+HITtwo:
+	move $t8, $t7
+	lw $t7, ($s2)
+	addi $s2, $s2, 4 # move array pointer
+	addi $t6, $t6, 1
+	j LRU # goto L1
+	
+HITthree:
+	move $s3, $t9
+	lw $t9, ($s2)
+	addi $s2, $s2, 4 # move array pointer
+	addi $t6, $t6, 1
+	j LRU
+	
+DONE:	
+	li $v0, 1
+	la $a0, ($t6)
+	syscall
+	
+	li $v0, 4
+	la $a0, mensaje
+	syscall
+	
+	jr $ra
+	
+	

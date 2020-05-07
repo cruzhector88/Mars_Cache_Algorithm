@@ -1,0 +1,53 @@
+.data
+	arr: .word 1,2,3,4,2,5,6,2,7,8,2,4,9,2,12,13,5,2,8,15
+
+.text
+	#which set to go
+	li $t0, 2
+	li $t1, 1
+	li $t2, 2
+	li $t3, 3
+	li $t4, 4
+	
+	la $s2, arr # $s2 = &arr
+	j LRU
+HITzero:
+	move $t2, $t1
+	lw $t1, ($s2)
+HIT:	addi $s2, $s2, 4 # move array pointer
+	addi $t6, $t6, 1 # hit++	
+
+LRU:	
+	lw $s5, 8($s2) #$s7 = arr[i]
+	
+	rem $t5, $s5, $t0
+	beqz $t5, ZERO
+	
+ONE:	
+	#t3, t4
+	beq $t3, $s5, HIT
+	bne $t4, $s5, HITone
+	addi $t6, $t6, 1 # hit++
+HITone:	move $t4, $t3
+	lw $t3, ($s2)
+	addi $s2, $s2, 4 # move array pointer
+	bne $s5, $0, LRU
+#DONE:	
+	li $v0, 1
+	la $a0, ($t6)
+	syscall
+	li $v0, 10
+	syscall	
+
+ZERO:	
+	#t1, t2
+	beq $t1, $s5, HIT
+	beq $t2, $s5, HITzero
+	move $t2, $t1
+	lw $t1, ($s2)
+	addi $s2, $s2, 4 # move array pointer
+	bne $s5, $0, LRU
+DONE:	
+	li $v0, 1
+	la $a0, ($t6)
+	syscall

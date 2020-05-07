@@ -1,0 +1,184 @@
+.data
+	mensaje: .asciiz " Hits\n"
+	arr: .word 1,2,3,4,2,5,6,2,7,8,2,4,9,2,12,13,5,2,8,15
+
+.text
+	la $s2, arr # $s2 = &arr
+	jal Optimo
+	
+	li $v0, 10
+	syscall
+	
+	
+Optimo:
+	#which set to go
+	li $t0, 4
+
+L1:	
+	lw $s5, ($s2) #$s7 = arr[i]
+	beqz $s5, DONE
+	
+	rem $t5, $s5, $t0
+	beqz $t5, ZERO
+	beq $t5, 2, TWO
+	beq $t5, 3, THREE
+	
+ONE:	
+	#t3, t4
+	beq $t3, $s5, HIT
+	beq $t4, $s5, HIT
+	beqz $t3, Switch1_1
+	beqz $t4, Switch1_2
+	
+L2_1:
+	addi $s6, $s6, 4
+	addi $s2, $s2, 4
+	lw $s5, ($s2)
+	beqz $s5, L2_1_reset
+	bne $t3, $s5, L2_2
+	addi $a1, $a1, 1
+L2_2:
+	bne $t4, $s5, L2_1
+	addi $a2, $a2, 1
+	j L2_1
+	
+L2_1_reset:
+	sub $s2, $s2, $s6
+	move $s6, $0
+	
+	bgt $a1, $a2, Switch1_2
+Switch1_1:
+	lw $t3, ($s2)
+	j exitONE
+Switch1_2:
+	lw $t4, ($s2)
+	
+exitONE:
+	move $a1, $0
+	move $a2, $0
+	addi $s2, $s2, 4 # move array pointer
+	j L1	
+##################################################################################################
+ZERO:	
+	#t1, t2
+	beq $t1, $s5, HIT
+	beq $t2, $s5, HIT
+	beqz $t1, Switch2_1
+	beqz $t2, Switch2_2
+
+L3_1:
+	addi $s6, $s6, 4
+	addi $s2, $s2, 4
+	lw $s5, ($s2)
+	beqz $s5, L3_1_reset
+	bne $t3, $s5, L3_2
+	addi $a1, $a1, 1
+L3_2:
+	bne $t4, $s5, L2_1
+	addi $a2, $a2, 1
+	j L3_1
+	
+L3_1_reset:
+	sub $s2, $s2, $s6
+	move $s6, $0
+	
+	bgt $a1, $a2, Switch2_2
+Switch2_1:	
+	lw $t1, ($s2)
+	j exitZERO
+Switch2_2:
+	lw $t2, ($s2)
+	
+exitZERO:
+	move $a1, $0
+	move $a2, $0
+	addi $s2, $s2, 4 # move array pointer
+	j L1
+######################################################################################
+TWO:	
+	#t7, t8
+	beq $t7, $s5, HIT
+	beq $t8, $s5, HIT
+	beqz $t7, Switch3_1
+	beqz $t8, Switch3_2
+	
+L4_1:
+	addi $s6, $s6, 4
+	addi $s2, $s2, 4
+	lw $s5, ($s2)
+	beqz $s5, L4_1_reset
+	bne $t3, $s5, L4_2
+	addi $a1, $a1, 1
+L4_2:
+	bne $t4, $s5, L4_1
+	addi $a2, $a2, 1
+	j L4_1
+	
+L4_1_reset:
+	sub $s2, $s2, $s6
+	move $s6, $0
+	
+	bgt $a1, $a2, Switch3_2
+Switch3_1:	
+	lw $t7, ($s2)
+	j exitTWO
+Switch3_2:
+	lw $t8, ($s2)
+	
+exitTWO:
+	move $a1, $0
+	move $a2, $0
+	addi $s2, $s2, 4 # move array pointer
+	j L1
+###########################################################################################
+THREE:	
+	#t1, t2
+	beq $t9, $s5, HIT
+	beq $s3, $s5, HIT
+	beqz $t9, Switch4_1
+	beqz $s3, Switch4_2
+	
+L5_1:
+	addi $s6, $s6, 4
+	addi $s2, $s2, 4
+	lw $s5, ($s2)
+	beqz $s5, L5_1_reset
+	bne $t3, $s5, L5_2
+	addi $a1, $a1, 1
+L5_2:
+	bne $t4, $s5, L5_1
+	addi $a2, $a2, 1
+	j L5_1
+	
+L5_1_reset:
+	sub $s2, $s2, $s6
+	move $s6, $0
+
+	bgt $a1, $a2, Switch4_2
+Switch4_1:	
+	lw $t9, ($s2)
+	j exitTHREE
+Switch4_2:
+	lw $s3, ($s2)
+	
+exitTHREE:
+	move $a1, $0
+	move $a2, $0
+	addi $s2, $s2, 4 # move array pointer
+	j L1
+####################################################################################				
+HIT:	
+	addi $t6, $t6, 1
+	addi $s2, $s2, 4 # move array pointer
+	j L1
+	
+DONE:	
+	li $v0, 1
+	la $a0, ($t6)
+	syscall
+	
+	li $v0, 4
+	la $a0, mensaje
+	syscall
+	
+	jr $ra
